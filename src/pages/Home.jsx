@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "../api/axios";
 import Spinner from "../components/Spinner";
+
 const Home = () => {
   const [search, setSearch] = useState("");
   const searchResults = useSelector((state) => state.weather.searchResults);
@@ -32,29 +33,8 @@ const Home = () => {
     year: "numeric",
   });
 
-  // useEffect(() => {
-  // 	// Get the current location of the user using the Geolocation API.
-  // 	if (navigator.geolocation) {
-  // 		navigator.geolocation.getCurrentPosition(async (position) => {
-  // 			const { latitude, longitude } = position.coords;
-
-  // 			// Make an API call to fetch weather data using the obtained latitude and longitude.
-  // 			try {
-  // 				const response = await axios.get(
-  // 					`/weather?lat=${latitude}&lon=${longitude}&appid=${import.meta.env.VITE_APP_API_KEY}`
-  // 				);
-  // 				console.log('data:', response.data)
-  // 				const currentWeatherLocation = response.data
-  // 				setCurrentWeather([currentWeatherLocation]);
-  // 				setWeatherCondition(currentWeatherLocation.weather[0].main)
-
-  // 			} catch (error) {
-  // 				console.error('Error fetching weather data:', error);
-  // 			}
-  // 		});
-  // 	}
-  // }, []);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -73,6 +53,9 @@ const Home = () => {
           setWeatherCondition(currentWeatherLocation.weather[0].main);
         } catch (error) {
           console.error("Error fetching weather data:", error);
+          setError(
+            "Failed to fetch current weather location. Please check your internet connection and try again."
+          );
         } finally {
           setIsLoading(false);
         }
@@ -97,9 +80,7 @@ const Home = () => {
     if (search) {
       const result = await fetchWeatherByCityName(search);
       if (result) {
-        // Use the spread operator to append the new result to the existing array.
         dispatch(addSearchResult(result));
-        // Save the search results in local storage.
         const existingResults =
           JSON.parse(localStorage.getItem("searchResults")) || [];
         existingResults.push(result);
@@ -121,9 +102,8 @@ const Home = () => {
   };
 
   const handleCancel = (name) => {
-    // Dispatch an action to delete the specific search result by name
     dispatch(deleteSearchResult(name));
-    // Delete the search result from local storage.
+
     const existingResults =
       JSON.parse(localStorage.getItem("searchResults")) || [];
     const updatedResults = existingResults.filter(
@@ -146,6 +126,8 @@ const Home = () => {
     <div>
       {isLoading ? (
         <Spinner />
+      ) : error ? (
+        <div>{error}</div>
       ) : (
         <div
           className={`bg-cover w-full lg:h-[100vh] h-full ${
@@ -181,7 +163,6 @@ const Home = () => {
                       <p className="text-base">
                         {formattedTime} - {formattedDate},
                       </p>
-                      {/* <p className="text-base">{currentDate.getFullYear()}</p> */}
                     </div>
                     <div className="text-xl pb-4">
                       <div className="pt-4 flex justify-center lg:block">
@@ -282,5 +263,3 @@ const Home = () => {
 };
 
 export default Home;
-
-//failed to fetch current weather location. please check your internet connection and try again
